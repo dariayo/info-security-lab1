@@ -4,9 +4,8 @@ import org.example.models.DataItem;
 import org.example.models.User;
 import org.example.repository.DataItemRepository;
 import org.example.repository.UserRepository;
-import org.example.services.JwtService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,47 +15,32 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class ApiController {
 
-    @Autowired
-    private DataItemRepository dataItemRepository;
+    private final DataItemRepository dataItemRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private JwtService jwtService;
+    public ApiController(DataItemRepository dataItemRepository, UserRepository userRepository) {
+        this.dataItemRepository = dataItemRepository;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping("/data")
-    public ResponseEntity<?> getData(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body("Authorization header required");
+    public ResponseEntity<?> getData(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
         }
 
-        String token = authHeader.substring(7);
-        if (!jwtService.validateToken(token)) {
-            return ResponseEntity.status(401).body("Invalid token");
-        }
-
-        String username = jwtService.getUsernameFromToken(token);
+        String username = authentication.getName();
         List<DataItem> items = dataItemRepository.findByUserUsername(username);
-
         return ResponseEntity.ok(items);
     }
 
     @PostMapping("/data")
-    public ResponseEntity<?> createDataItem(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody DataItem dataItem) {
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body("Authorization header required");
+    public ResponseEntity<?> createDataItem(Authentication authentication, @RequestBody DataItem dataItem) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
         }
 
-        String token = authHeader.substring(7);
-        if (!jwtService.validateToken(token)) {
-            return ResponseEntity.status(401).body("Invalid token");
-        }
-
-        String username = jwtService.getUsernameFromToken(token);
+        String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
 
         if (userOpt.isPresent()) {

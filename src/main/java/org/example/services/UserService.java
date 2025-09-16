@@ -1,9 +1,9 @@
 package org.example.services;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.example.models.User;
 import org.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -11,13 +11,22 @@ import java.util.Optional;
 @Service
 public class UserService {
 
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+
     @Autowired
-    private UserRepository userRepository;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder(12); // strength 12
+    }
 
-    public User createUser(String username, String password, String email) {
-        String hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray());
-
-        User user = new User(username, hashedPassword, email);
+    public User createUser(String username, String rawPassword, String email) {
+        String hashedPassword = passwordEncoder.encode(rawPassword);
+        User user = User.builder()
+                .username(username)
+                .password(hashedPassword)
+                .email(email)
+                .build();
         return userRepository.save(user);
     }
 
@@ -25,8 +34,7 @@ public class UserService {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.getPassword());
-            if (result.verified) {
+            if (passwordEncoder.matches(password, user.getPassword())) {
                 return Optional.of(user);
             }
         }

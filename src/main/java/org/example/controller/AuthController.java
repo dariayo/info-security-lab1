@@ -7,7 +7,6 @@ import org.example.DTO.RegisterRequest;
 import org.example.models.User;
 import org.example.services.JwtService;
 import org.example.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,11 +19,13 @@ import java.util.Optional;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final JwtService jwtService;
 
-    @Autowired
-    private JwtService jwtService;
+    public AuthController(UserService userService, JwtService jwtService) {
+        this.userService = userService;
+        this.jwtService = jwtService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
@@ -49,8 +50,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        Optional<User> userOpt =
-                userService.validateUser(loginRequest.getUsername(), loginRequest.getPassword());
+        Optional<User> userOpt = userService.validateUser(loginRequest.getUsername(), loginRequest.getPassword());
 
         if (userOpt.isPresent()) {
             String token = jwtService.generateToken(loginRequest.getUsername());
