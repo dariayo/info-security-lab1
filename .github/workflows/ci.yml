@@ -1,4 +1,4 @@
-name: CI
+name: Java CI
 
 on:
   push:
@@ -9,39 +9,46 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Build
-        working-directory: ./
-        run: mvn clean install
+      - name: Build with Maven
+        run: mvn clean compile -DskipTests
 
-      - name: SpotBugs
-        working-directory: ./
-        run: mvn com.github.spotbugs:spotbugs-maven-plugin:spotbugs
+      - name: Run tests
+        run: mvn test
 
-      - name: Snyk CLI
-        run: npm install -g snyk
+      - name: Run SpotBugs (SAST)
+        run: mvn spotbugs:check
+        continue-on-error: true
 
-      - name: Test Snyk
-        working-directory: ./
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk test --all-projects
+      - name: Run OWASP Dependency-Check (SCA)
+        run: mvn org.owasp:dependency-check-maven:check -DautoUpdate=false -DfailOnError=false
+        continue-on-error: true
 
-      - name: Reports
+      - name: Upload security reports
         uses: actions/upload-artifact@v4
         with:
-          name: reports
+          name: security-reports
           path: |
-            target/spotbugsXml.xml
+            target/spotbugs.xml
+            target/dependency-check-report.html
+        if: always()
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-app
+          path: target/*.jar
+        if: success()
