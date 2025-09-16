@@ -24,7 +24,7 @@ jobs:
 
       - name: Build
         working-directory: ./
-        run: mvn clean install
+        run: mvn clean install -q
 
       - name: SpotBugs
         working-directory: ./
