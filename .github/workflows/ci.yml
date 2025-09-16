@@ -23,18 +23,18 @@ jobs:
           distribution: 'temurin'
 
       - name: Build
-        working-directory: src
+        working-directory: ./
         run: mvn clean install
 
       - name: SpotBugs
-        working-directory: src
+        working-directory: ./
         run: mvn com.github.spotbugs:spotbugs-maven-plugin:spotbugs
 
       - name: Snyk CLI
         run: npm install -g snyk
 
       - name: Test Snyk
-        working-directory: src
+        working-directory: ./
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: snyk test --all-projects
