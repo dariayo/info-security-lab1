@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build
+        working-directory: src
+        run: mvn clean install
+
+      - name: SpotBugs
+        working-directory: src
+        run: mvn com.github.spotbugs:spotbugs-maven-plugin:spotbugs
+
+      - name: Snyk CLI
+        run: npm install -g snyk
+
+      - name: Test Snyk
+        working-directory: src
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test --all-projects
+
+      - name: Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            target/spotbugsXml.xml
