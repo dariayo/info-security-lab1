@@ -14,40 +14,44 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '17'
-          distribution: 'temurin'
 
-      - name: Build
-        working-directory: ./
+      - name: Build project
         run: mvn clean install -q
 
-      - name: SpotBugs
-        working-directory: ./
+      - name: Run SpotBugs
         run: |
           mvn com.github.spotbugs:spotbugs-maven-plugin:spotbugs \
             -Dspotbugs.xmlOutput=true \
             -Dspotbugs.htmlOutput=true \
             -Dspotbugs.outputDirectory=target/spotbugs-reports
 
+      - name: Upload SpotBugs reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-reports
+          path: target/spotbugs-reports/
+
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Test Snyk
-        working-directory: ./
+      - name: Run Snyk Test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
+          snyk test --all-projects | tee target/snyk-report.txt
           snyk test --all-projects --json > target/snyk-report.json
 
-      - name: Upload Reports
+      - name: Upload Snyk reports
         uses: actions/upload-artifact@v4
         with:
-          name: reports
+          name: snyk-reports
           path: |
-            target/spotbugs-reports/
+            target/snyk-report.txt
             target/snyk-report.json
