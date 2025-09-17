@@ -44,6 +44,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
+          npm install -g snyk snyk-to-html
           snyk test --all-projects | tee target/snyk-report.txt
           snyk test --all-projects --json > target/snyk-report.json
           snyk-to-html -i snyk-report.json -o snyk-report.html
