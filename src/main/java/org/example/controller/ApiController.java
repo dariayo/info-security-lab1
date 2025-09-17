@@ -8,6 +8,7 @@ import org.example.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +47,6 @@ public class ApiController {
 
     @PostMapping("/data")
     public ResponseEntity<?> createDataItem(Authentication authentication, @RequestBody DataItem dataItem) {
-
         if (authentication == null || authentication.getName() == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
@@ -55,22 +55,17 @@ public class ApiController {
         Optional<User> userOpt = userRepository.findByUsername(username);
 
         if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            dataItem.setUser(user);
+            dataItem.setTitle(HtmlUtils.htmlEscape(dataItem.getTitle()));
+            if (dataItem.getDescription() != null) {
+                dataItem.setDescription(HtmlUtils.htmlEscape(dataItem.getDescription()));
+            }
 
+            dataItem.setUser(userOpt.get());
             DataItem savedItem = dataItemRepository.save(dataItem);
 
-            DataItemDto dto = new DataItemDto(
-                    savedItem.getId(),
-                    savedItem.getTitle(),
-                    savedItem.getDescription()
-            );
-
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(savedItem);
         }
 
         return ResponseEntity.status(404).body("User not found");
     }
-
 }
-

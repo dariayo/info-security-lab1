@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.Optional;
 
@@ -29,32 +30,37 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        if (userService.usernameExists(registerRequest.getUsername())) {
+        String escapedUsername = HtmlUtils.htmlEscape(registerRequest.getUsername());
+        String escapedEmail = HtmlUtils.htmlEscape(registerRequest.getEmail());
+
+        if (userService.usernameExists(escapedUsername)) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
 
-        if (userService.emailExists(registerRequest.getEmail())) {
+        if (userService.emailExists(escapedEmail)) {
             return ResponseEntity.badRequest().body("Email already exists");
         }
 
         User user = userService.createUser(
-                registerRequest.getUsername(),
+                escapedUsername,
                 registerRequest.getPassword(),
-                registerRequest.getEmail()
+                escapedEmail
         );
 
         String token = jwtService.generateToken(user.getUsername());
 
-        return ResponseEntity.ok(new AuthResponse(token, user.getUsername()));
+        return ResponseEntity.ok(new AuthResponse(token, HtmlUtils.htmlEscape(user.getUsername())));
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        Optional<User> userOpt = userService.validateUser(loginRequest.getUsername(), loginRequest.getPassword());
+        String escapedUsername = HtmlUtils.htmlEscape(loginRequest.getUsername());
+
+        Optional<User> userOpt = userService.validateUser(escapedUsername, loginRequest.getPassword());
 
         if (userOpt.isPresent()) {
-            String token = jwtService.generateToken(loginRequest.getUsername());
-            return ResponseEntity.ok(new AuthResponse(token, loginRequest.getUsername()));
+            String token = jwtService.generateToken(escapedUsername);
+            return ResponseEntity.ok(new AuthResponse(token, HtmlUtils.htmlEscape(escapedUsername)));
         }
 
         return ResponseEntity.status(401).body("Invalid credentials");
