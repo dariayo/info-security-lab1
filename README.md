@@ -5,6 +5,7 @@
 В рамках лабораторной было реализовано защищённое API со следующими эндпоинтами:
 
 POST /auth/login — аутентификация пользователя (возвращает JWT-токен).
+
 ``` bash
 curl -X POST http://localhost:9999/auth/login \
  -H "Content-Type: application/json" \
@@ -15,11 +16,14 @@ curl -X POST http://localhost:9999/auth/login \
 ```
 
 GET /api/data — получение пользовательских данных. Доступ только с валидным токеном.
+
 ``` bash
 curl -X GET http://localhost:9999/api/data \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
+
 POST /api/data — создание нового элемента данных, привязанного к пользователю.
+
 ``` bash
 curl -X POST http://localhost:9999/api/data \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
@@ -29,6 +33,7 @@ curl -X POST http://localhost:9999/api/data \
     "description": "This is a test item"
   }'
 ```
+
 ## Меры защиты
 
 ### SQL Injection:
@@ -37,7 +42,9 @@ curl -X POST http://localhost:9999/api/data \
   автоматически генерируют параметризованные SQL-запросы, без прямой подстановки строк.
 
 ### XSS:
+
 - Все пользовательские строковые данные экранируются с помощью `HtmlUtils.htmlEscape()` перед сохранением в базу данных.
+
 ### Broken Authentication:
 
 - пароли хранятся только в хэшированном виде (алгоритм BCrypt);
@@ -52,11 +59,13 @@ curl -X POST http://localhost:9999/api/data \
 ## Скриншоты отчетов SAST/SCA
 
 ### SAST (spotbugs)
+
 ![img.png](images/img.png)
 ![img_2.png](images/img_3.png)
+
 ### SCA (Snyk)
+
 ![img_1.png](images/img_1.png)
 ![img_3.png](images/img_2.png)
 
-
-[Ссылка на pipiline](https://github.com/dariayo/info-security-lab1/actions/runs/17790068700/job/50564907965)
+[Ссылка на pipeline](https://github.com/dariayo/info-security-lab1/actions/runs/17798356083)
