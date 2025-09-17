@@ -47,7 +47,7 @@ jobs:
           npm install -g snyk snyk-to-html
           snyk test --all-projects | tee target/snyk-report.txt
           snyk test --all-projects --json > target/snyk-report.json
-          snyk-to-html -i snyk-report.json -o snyk-report.html
+          snyk-to-html -i target/snyk-report.json -o target/snyk-report.html
 
       - name: Upload Snyk reports
         uses: actions/upload-artifact@v4
