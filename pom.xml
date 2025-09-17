@@ -165,7 +165,9 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <xmlOutput>true</xmlOutput>
                     <htmlOutput>true</htmlOutput>
+                    <outputDirectory>${project.build.directory}/spotbugs-reports</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>
