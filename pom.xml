@@ -164,6 +164,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <htmlOutput>true</htmlOutput>
+                </configuration>
             </plugin>
         </plugins>
     </build>

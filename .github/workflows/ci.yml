@@ -28,20 +28,26 @@ jobs:
 
       - name: SpotBugs
         working-directory: ./
-        run: mvn com.github.spotbugs:spotbugs-maven-plugin:spotbugs
+        run: |
+          mvn com.github.spotbugs:spotbugs-maven-plugin:spotbugs \
+            -Dspotbugs.xmlOutput=true \
+            -Dspotbugs.htmlOutput=true \
+            -Dspotbugs.outputDirectory=target/spotbugs-reports
 
-      - name: Snyk CLI
+      - name: Install Snyk CLI
         run: npm install -g snyk
 
       - name: Test Snyk
         working-directory: ./
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk test --all-projects
+        run: |
+          snyk test --all-projects --json > target/snyk-report.json
 
-      - name: Reports
+      - name: Upload Reports
         uses: actions/upload-artifact@v4
         with:
           name: reports
           path: |
-            target/spotbugsXml.xml
+            target/spotbugs-reports/
+            target/snyk-report.json
