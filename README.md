@@ -5,11 +5,30 @@
 В рамках лабораторной было реализовано защищённое API со следующими эндпоинтами:
 
 POST /auth/login — аутентификация пользователя (возвращает JWT-токен).
+``` bash
+curl -X POST http://localhost:9999/auth/login \
+ -H "Content-Type: application/json" \
+ -d '{
+   "username": "testuser",
+   "password": "password123"
+ }
+```
 
 GET /api/data — получение пользовательских данных. Доступ только с валидным токеном.
-
+``` bash
+curl -X GET http://localhost:9999/api/data \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
 POST /api/data — создание нового элемента данных, привязанного к пользователю.
-
+``` bash
+curl -X POST http://localhost:9999/api/data \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Test Item",
+    "description": "This is a test item"
+  }'
+```
 ## Меры защиты
 
 ### SQL Injection:
@@ -18,9 +37,7 @@ POST /api/data — создание нового элемента данных, 
   автоматически генерируют параметризованные SQL-запросы, без прямой подстановки строк.
 
 ### XSS:
-
-- API возвращает только DTO-объекты (DataItemDto, AuthResponse), исключая прямой возврат JPA-сущностей
-
+- Все пользовательские строковые данные экранируются с помощью `HtmlUtils.htmlEscape()` перед сохранением в базу данных.
 ### Broken Authentication:
 
 - пароли хранятся только в хэшированном виде (алгоритм BCrypt);
