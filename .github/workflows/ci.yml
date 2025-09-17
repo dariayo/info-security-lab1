@@ -29,8 +29,7 @@ jobs:
         run: |
           mvn com.github.spotbugs:spotbugs-maven-plugin:spotbugs \
             -Dspotbugs.xmlOutput=true \
-            -Dspotbugs.htmlOutput=true \
-            -Dspotbugs.outputDirectory=target/spotbugs-reports
+            -Dspotbugs.htmlOutput=true 
 
       - name: Upload SpotBugs reports
         uses: actions/upload-artifact@v4
