@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import org.example.DTO.DataItemDto;
 import org.example.models.DataItem;
 import org.example.models.User;
 import org.example.repository.DataItemRepository;
@@ -30,12 +31,22 @@ public class ApiController {
         }
 
         String username = authentication.getName();
-        List<DataItem> items = dataItemRepository.findByUserUsername(username);
+
+        List<DataItemDto> items = dataItemRepository.findByUserUsername(username)
+                .stream()
+                .map(item -> new DataItemDto(
+                        item.getId(),
+                        item.getTitle(),
+                        item.getDescription()
+                ))
+                .toList();
+
         return ResponseEntity.ok(items);
     }
 
     @PostMapping("/data")
     public ResponseEntity<?> createDataItem(Authentication authentication, @RequestBody DataItem dataItem) {
+
         if (authentication == null || authentication.getName() == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
@@ -44,11 +55,22 @@ public class ApiController {
         Optional<User> userOpt = userRepository.findByUsername(username);
 
         if (userOpt.isPresent()) {
-            dataItem.setUser(userOpt.get());
+            User user = userOpt.get();
+            dataItem.setUser(user);
+
             DataItem savedItem = dataItemRepository.save(dataItem);
-            return ResponseEntity.ok(savedItem);
+
+            DataItemDto dto = new DataItemDto(
+                    savedItem.getId(),
+                    savedItem.getTitle(),
+                    savedItem.getDescription()
+            );
+
+            return ResponseEntity.ok(dto);
         }
 
         return ResponseEntity.status(404).body("User not found");
     }
+
 }
+
