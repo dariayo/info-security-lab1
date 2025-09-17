@@ -6,8 +6,6 @@
 
 POST /auth/login — аутентификация пользователя (возвращает JWT-токен).
 
-POST /auth/register — регистрация нового пользователя.
-
 GET /api/data — получение пользовательских данных. Доступ только с валидным токеном.
 
 POST /api/data — создание нового элемента данных, привязанного к пользователю.
@@ -38,8 +36,10 @@ POST /api/data — создание нового элемента данных, 
 
 ### SAST (spotbugs)
 ![img.png](images/img.png)
+![img_2.png](images/img_3.png)
 ### SCA (Snyk)
 ![img_1.png](images/img_1.png)
+![img_3.png](images/img_2.png)
 
 
 [Ссылка на pipiline](https://github.com/dariayo/info-security-lab1/actions/runs/17790068700/job/50564907965)
